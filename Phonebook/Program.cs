@@ -11,6 +11,7 @@ namespace Phonebook
 {
     class Program
     {
+        // Enums
         public enum DatabaseServer
         {
             SqlServer = 1,
@@ -31,9 +32,11 @@ namespace Phonebook
             ReturnOne = 2
         }
 
+        // I have my connection strings hard coded right now, but they should be ideally taken from a cfg file when users want to plug their own connection strings in
         static string SqlConnectionString = "Data Source = localhost; Initial Catalog = PhonebookDB; Integrated Security = True";
         static string mySqlConnectionString = "server=localhost;user id=root;database=phonebook;pwd=root;";
 
+        // Implemented delegates here to understand how delegates work in C# so decided to implement them
         public delegate List<SqlParameter> UpdateSqlParamatersDelegate(int id, string name, string email, string contact);
         public delegate List<MySqlParameter> UpdateMySqlParamatersDelegate(int id, string name, string email, string contact);
 
@@ -41,6 +44,8 @@ namespace Phonebook
         {
             IDB dbManager = null;
 
+            // Two local functions to create a list of mySQL/SQL parameters (can only be accessed using delegates) which will be plugged into functions using delegates
+            // Can be avoided by placing functions outside of void main but wanted to learn how delegates work so used this approach
             List<SqlParameter> AddSQLUpdateParamaters(int id, string name, string email, string contact)
             {
                 List<SqlParameter> list = new List<SqlParameter>
@@ -72,6 +77,7 @@ namespace Phonebook
             switch (db)
             {
                 case DatabaseServer.SqlServer:
+                    // SQLDbManager derives from IDB
                     dbManager = new SQLDbManager(SqlConnectionString);
                     break;
                 case DatabaseServer.MySql:
@@ -134,12 +140,14 @@ namespace Phonebook
 
             if (dbManager is SQLDbManager)
             {
+                // Bind our parameters to our list 
                 List<SqlParameter> list = new List<SqlParameter>
                                 {
                                     new SqlParameter("@Name", name),
                                     new SqlParameter("@Email", email),
                                     new SqlParameter("@Contact", contact)
                                 };
+                // Also a generic function that works for both SQL and MySQL
                 InsertOneRecord<SqlParameter>(dbManager, list);
             }
             else if (dbManager is MySqlDbManager)
@@ -157,7 +165,7 @@ namespace Phonebook
         public static void InsertOneRecord<T>(IDB dbManager, List<T> list) where T : DbParameter
         {
             try
-            {
+            {                
                 dbManager.ExecuteStoredProcedure("InsertRecord", list);
                 Console.WriteLine("Data inserted succesfully");
             }
@@ -248,6 +256,7 @@ namespace Phonebook
         }
 
         //UPDATE FUNCTIONS
+        // Any function that has the same signature as the delegates can be passed as a parameter
         public static void UpdateRecord(IDB dbManager, UpdateSqlParamatersDelegate sqlDel, UpdateMySqlParamatersDelegate mySqlDel)
         {            
             Console.WriteLine("Please enter an Id");
@@ -263,6 +272,7 @@ namespace Phonebook
             {
                 if (dbManager is SQLDbManager)
                 {
+                    // Where connection between delegate and local function is shown
                     List<SqlParameter> list = sqlDel(id, name, email, contact);
                     UpdateOneRecord<SqlParameter>(dbManager, list);
                 }
@@ -274,6 +284,7 @@ namespace Phonebook
             }
             catch (Exception ex)
             {
+                // Exception is handled 
                 Console.WriteLine(ex.Message);
             }
         }
@@ -293,6 +304,7 @@ namespace Phonebook
             {
                 if (dbManager is SQLDbManager)
                 {
+                    // Create a list of SQL parameter objects, here just with id
                     List<SqlParameter> list = new List<SqlParameter>
                                 {
                                     new SqlParameter("@Id", id)
