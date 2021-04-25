@@ -23,6 +23,7 @@ namespace Phonebook
             Read = 2,
             Update = 3,
             Delete = 4,
+            Exit = 5
         }
         public enum QueryOptions
         {
@@ -64,28 +65,28 @@ namespace Phonebook
                 return list;
             }
 
+            Console.WriteLine("Which database server would you like to choose? \n 1 = SqlServer \n 2 = MySql \n 3 = Exit");
+            int server = Convert.ToInt32(Console.ReadLine());
+            DatabaseServer db = (DatabaseServer)server;
+
+            switch (db)
+            {
+                case DatabaseServer.SqlServer:
+                    dbManager = new SQLDbManager(SqlConnectionString);
+                    break;
+                case DatabaseServer.MySql:
+                    dbManager = new MySqlDbManager(mySqlConnectionString);
+                    break;
+                case DatabaseServer.Exit:
+                    Environment.Exit(0);
+                    break;
+                default:
+                    break;
+            }
+
             while (true)
             {
-                Console.WriteLine("Which database server would you like to choose? \n 1 = SqlServer \n 2 = MySql \n 3 = Exit");
-                int server = Convert.ToInt32(Console.ReadLine());
-                DatabaseServer db = (DatabaseServer)server;
-
-                switch (db)
-                {
-                    case DatabaseServer.SqlServer:
-                        dbManager = new SQLDbManager(SqlConnectionString);
-                        break;
-                    case DatabaseServer.MySql:
-                        dbManager = new MySqlDbManager(mySqlConnectionString);
-                        break;
-                    case DatabaseServer.Exit:
-                        Environment.Exit(0);
-                        break;
-                    default:
-                        break;
-                }                
-
-                Console.WriteLine("Choose from these options: \n 1 = Create \n 2 = Read \n 3 = Update \n 4 = Delete");
+                Console.WriteLine("Choose from these options: \n 1 = Create \n 2 = Read \n 3 = Update \n 4 = Delete \n 5 = Exit");
                 int answer = Convert.ToInt32(Console.ReadLine());
                 //Cast answer (an int) to Options (an enum)
                 Options o = (Options)answer;
@@ -108,10 +109,15 @@ namespace Phonebook
                         DeleteRecord(dbManager);
                         break;
 
+                    case Options.Exit:
+                        Environment.Exit(0);
+                        break;
+
                     default:
                         break;
                 }
                 // Wait for signal to clear console and re-start while loop
+                Console.WriteLine("\nPress enter to continue...");
                 Console.ReadLine();
                 Console.Clear();
             }
